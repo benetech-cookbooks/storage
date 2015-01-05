@@ -1,0 +1,7 @@
+name             'storage'
+maintainer       'Ron Ellis'
+maintainer_email 'rone@benetech.org'
+license          'All rights reserved'
+description      'Installs/Configures storage'
+long_description 'Installs/Configures storage'
+version          '0.1.0'
