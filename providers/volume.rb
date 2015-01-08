@@ -13,19 +13,18 @@ action :create do
     Chef::Log.info "#{ @new_resource } already exists - nothing to do."
   else
     converge_by("Create #{ @new_resource }") do
-      create_fs
+      create
     end
   end
 end
 
-def create_fs
+def create
   dev_list_string = xvdevs.map { |dev| " #{dev}" }*''
   case new_resource.fs_type
     when "btrfs"
       package "btrfs-tools" do
         action :upgrade
       end
-
       if (!File.exists? "/dev/disk/by-label/#{new_resource.volume_label}")
         execute "mkfs.btrfs -f -L #{new_resource.volume_label} -d #{new_resource.raid_type}#{dev_list_string}"
       end
