@@ -71,11 +71,6 @@ class EphemeralStorage
         only_if { Dir.exists? tmpdir }
       end
 
-      ################### STOPPED HERE #######################
-      ### Where does the following block belong? In a subclass?
-
-
-
       mount "/#{fs.volname}" do
         device "root-btrfs"
         device_type :label
@@ -98,6 +93,8 @@ class EphemeralStorage
         group "root"
         mode fs.perms
       end
+
     end
   end
+
 end
