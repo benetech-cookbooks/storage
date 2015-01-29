@@ -1,0 +1,1 @@
+btrfs_ephemeral_storage StorageCookbook::Btrfs::RAID1
