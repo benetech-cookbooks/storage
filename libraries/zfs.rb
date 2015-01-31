@@ -2,7 +2,8 @@ require 'mixlib/shellout'
 
 module StorageCookbook
   module Zfs
-    RAID1 = 'mirror'
+    RAID0 = ''
+    RAID1 = ' mirror'
     FS_TYPE = 'zfs'
     FS_OPTS = { 'root' => %w(devices=off setuid=off exec=off),
                 'tmp' => %w(devices=off setuid=off exec=off),
@@ -23,7 +24,7 @@ module StorageCookbook
         zpool_list.run_command
         zpool_array = zpool_list.stdout.lines.to_a.drop(1).map { |zpool| zpool.split(' ')[0]}
         if ! zpool_array.include? volume_name
-          puts "creating zpool: " + "zpool create -f#{opts_string} #{volume_name} #{raid_level} #{dev_list_string}"
+          puts "creating zpool: " + "zpool create -f#{opts_string} #{volume_name}#{raid_level} #{dev_list_string}"
           create_pool_cmd = Mixlib::ShellOut.new("zpool create -f#{opts_string} #{volume_name} #{raid_level} #{dev_list_string}")
           create_pool_cmd.run_command
           if ! create_pool_cmd.status
