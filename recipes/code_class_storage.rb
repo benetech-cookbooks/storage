@@ -36,3 +36,66 @@ ruby_block "create_zfs_jenkins_subvolume" do
   end
   action :run
 end
+
+ruby_block "create_zfs_smysql_subvolume" do
+  block do
+    StorageCookbook::Zfs.create_subvolume("tank", "smysql")
+  end
+  action :run
+end
+
+ruby_block "create_zfs_sonar_subvolume" do
+  block do
+    StorageCookbook::Zfs.create_subvolume("tank", "sonar")
+  end
+  action :run
+end
+
+ruby_block "create_zfs_bzr_subvolume" do
+  block do
+    StorageCookbook::Zfs.create_subvolume("tank", "bzr")
+  end
+  action :run
+end
+
+ruby_block "create_zfs_artifactory_subvolume" do
+  block do
+    StorageCookbook::Zfs.create_subvolume("tank", "artifactory")
+  end
+  action :run
+end
+
+ruby_block "create_zfs_artifactory_subvolume" do
+  block do
+    StorageCookbook::Zfs.create_subvolume("tank", "postgres")
+  end
+  action :run
+end
+
+ruby_block "create_zfs_sitedocs_subvolume" do
+  block do
+    StorageCookbook::Zfs.create_subvolume("tank", "sitedocs")
+  end
+  action :run
+end
+
+ruby_block "create_zfs_docker-registry_subvolume" do
+  block do
+    StorageCookbook::Zfs.create_subvolume("tank", "docker-registry")
+  end
+  action :run
+end
+
+ruby_block "create_zfs_bzr-email-notifier_subvolume" do
+  block do
+    StorageCookbook::Zfs.create_subvolume("tank", "bzr-email-notifier")
+  end
+  action :run
+end
+
+ruby_block "create_zfs_deploy_subvolume" do
+  block do
+    StorageCookbook::Zfs.create_subvolume("tank", "deploy")
+  end
+  action :run
+end
