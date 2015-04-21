@@ -67,7 +67,13 @@ module StorageCookbook
         action :create
       end
 
-      StorageCookbook::Zfs.create_volume(root_vol_name, raid_level, devices)
+      ruby_block "create_volume_#{root_vol_name}" do
+        block do
+          StorageCookbook::Zfs.create_volume(root_vol_name, raid_level, devices)
+          not_if "zpool list | grep -q #{root_vol_name}"
+        end
+      end
+
 
       filesystems.each do |subvol, opts|
         next if subvol.eql? "root"
