@@ -12,9 +12,8 @@ module StorageCookbook
 
     def self.create_volume(volume_name, raid_level, devices, options = {})
       if ! File.exist? '/sbin/zpool'
-        puts "tried to run create_volume without ZoL installed!? (hopefully chef compile phase)"
+        raise "tried to run create_volume without ZoL installed!? (hopefully chef compile phase)"
       else
-        puts "entering create_volume"
         dev_list_string = StorageCookbook::Utils.dev_string_from_array(devices)
 
         opts_string = ''
@@ -24,7 +23,6 @@ module StorageCookbook
         zpool_list.run_command
         zpool_array = zpool_list.stdout.lines.to_a.drop(1).map { |zpool| zpool.split(' ')[0]}
         if ! zpool_array.include? volume_name
-          puts "creating zpool: " + "zpool create -f#{opts_string} #{volume_name}#{raid_level} #{dev_list_string}"
           create_pool_cmd = Mixlib::ShellOut.new("zpool create -f#{opts_string} #{volume_name} #{raid_level} #{dev_list_string}")
           create_pool_cmd.run_command
           if ! create_pool_cmd.status
@@ -36,7 +34,7 @@ module StorageCookbook
 
     def self.create_subvolume(volume_name, subvolume_name, options = {})
       if ! File.exist? '/sbin/zfs'
-        puts "tried to run create_subvolume without ZoL installed!? (hopefully chef compile phase)"
+        raise "tried to run create_subvolume without ZoL installed!? (hopefully chef compile phase)"
       else
         opts_string = ''
         opts_string = opts_string + " -o mountpoint=#{options[:mount_point]}" unless options[:mount_point].nil?

@@ -14,15 +14,15 @@ class Chef
         @filesystems = StorageCookbook::EphemeralStorage::FS_PERMS
         @fstype = StorageCookbook::Btrfs::FS_TYPE
         @raid_level = new_resource.raid_level
-        @root_vol_name = "ephemeral-#{fstype}"
-        @root_dir = "/#{@root_vol_name}"
+        @vol_name = "ephemeral-#{fstype}"
+        @root_dir = "/#{@vol_name}"
 
         @devices = self.find_ephemeral_devices
 
         # combine arrays to fill iqn fs options
         StorageCookbook::Btrfs::FS_OPTS.each { |key, opts| @filesystems[key].push(opts) }
 
-        self.populate(@root_vol_name, @filesystems)
+        self.populate(@vol_name, @filesystems)
       end
 
       def whyrun_supported?
@@ -46,7 +46,7 @@ class Chef
       end
 
       def root_vol_name
-        @root_vol_name
+        @vol_name
       end
 
       def root_dir

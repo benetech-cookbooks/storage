@@ -14,12 +14,12 @@ class Chef
         @filesystems = StorageCookbook::EphemeralStorage::FS_PERMS
         @fstype = StorageCookbook::Zfs::FS_TYPE
         @raid_level = new_resource.raid_level
-        @root_vol_name = "ephemeral-#{fstype}"
-        @root_dir = "/#{@root_vol_name}"
+        @vol_name = "ephemeral-#{fstype}"
+        @root_dir = "/#{@vol_name}"
 
         @devices = self.find_ephemeral_devices
 
-        self.populate(@root_vol_name, @filesystems)
+        self.populate(@vol_name, @filesystems)
       end
 
       def whyrun_supported?
@@ -43,7 +43,7 @@ class Chef
       end
 
       def root_vol_name
-        @root_vol_name
+        @vol_name
       end
 
       def root_dir
