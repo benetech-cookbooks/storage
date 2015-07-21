@@ -66,5 +66,6 @@ module StorageCookbook
         new_dev.size_bytes = `#{dev_size_cmd} /dev/#{new_dev.fixed_dev_name}`
         dev_list.push(new_dev)
       end
+    end
   end
 end
