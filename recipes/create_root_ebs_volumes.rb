@@ -26,5 +26,22 @@ node['storage']['root_volume_count'].times { |count|
       node.normal[:aws][:ebs_volume][zpool+count.to_s]['device'] = dev
     end
     action :nothing
+    # notifies :run, "execute[create_gpt_partition_table_#{zpool+count.to_s}]", :immediately
+    notifies :mklabel, "parted_disk[#{dev}]", :immediately
   end
+
+  # execute "create_gpt_partition_table_#{zpool+count.to_s}" do
+  #   command "/sbin/parted #{dev} mklabel gpt"
+  #   retries 5
+  #   retry_delay 5
+  #   action :nothing
+  # end
+
+  parted_disk dev do
+    label_type "gpt"
+    action :nothing
+    retries 5
+    retry_delay 5
+  end
+
 }

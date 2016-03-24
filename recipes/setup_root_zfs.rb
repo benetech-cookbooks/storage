@@ -6,45 +6,55 @@ zpool root_zpool do
 end
 
 node['storage']['root_filesystems'].keys.each do |fs|
-  rsync_complete_path = "/#{fs}/.rsync_completed"
 
+  # move the existing data out of the way
   execute "mv_/#{fs}_to_/#{fs}.off" do
     command "mv /#{fs} /#{fs}.off"
-    not_if { ( Dir.exist?("/#{fs}.off") || File.exist?(rsync_complete_path) ) }
+    not_if { node['storage']['root_filesystems'][fs]['rsync_completed'] }
+    notifies :create, "directory[recreate_mountpoint_#{fs}]", :immediately
   end
 
+  # recreate the mountpoint
   directory "recreate_mountpoint_#{fs}" do
     path "/#{fs}"
     mode lazy { node['storage']['root_filesystems'][fs]['mode'] }
+    action :nothing
+    notifies :create, "zfs[#{root_zpool}/#{fs}]", :immediately
   end
 
   zfs "#{root_zpool}/#{fs}" do
     mountpoint "/#{fs}"
+    action :nothing
+    notifies :run, "execute[rsync_#{fs}]", :immediately
   end
 
+  execute "rsync_#{fs}" do
+    command "rsync --ignore-missing-args -a /#{fs}.off/* /#{fs}/"
+    action :nothing
+    notifies :run, "ruby_block[set_rsync_completed_attribute_#{fs}]", :immediately
+  end
+
+  ruby_block "set_rsync_completed_attribute_#{fs}" do
+    block do
+      node.normal['storage']['root_filesystems'][fs]['rsync_completed'] = true
+    end
+    action :nothing
+    # notifies :delete, "directory[delete_/#{fs}.off]", :immediately
+  end
+
+  directory "delete_/#{fs}.off" do
+    path "/#{fs}.off"
+    recursive true
+    action :delete
+    only_if { node['storage']['root_filesystems'][fs]['rsync_completed'] }
+  end
+
+  # set any zfs flags not already set
   node['storage']['root_filesystems'][fs]['opts'].each {|key, value|
     execute "zfs set #{key}=#{value} #{root_zpool}/#{fs}" do
       only_if "[[ $(zfs get #{key} #{root_zpool}/#{fs} | tr -s ' ' | tail -n1 | cut -d' ' -f3) != #{value} ]]"
     end
   }
-
-  execute "rsync_#{fs}" do
-    command "rsync --ignore-missing-args -a /#{fs}.off/* /#{fs}/"
-    not_if { File.exist? rsync_complete_path }
-  end
-
-  file rsync_complete_path do
-    owner 'root'
-    group 'root'
-    mode '0644'
-    action :create
-  end
-
-  directory "/#{fs}.off" do
-    recursive true
-    action :delete
-    only_if { File.exist? rsync_complete_path }
-  end
 end
 
 class ZTools
