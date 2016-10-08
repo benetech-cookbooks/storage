@@ -4,7 +4,7 @@ maintainer_email 'rone@benetech.org'
 license          'All rights reserved'
 description      'Installs/Configures storage'
 long_description 'Installs/Configures storage'
-version          '0.4.95'
+version          '0.4.97'
 
 depends 'zfs_linux', '~> 2.0.1'
 depends 'aws', '~> 2.7.1'
