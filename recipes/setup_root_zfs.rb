@@ -1,8 +1,18 @@
 root_zpool = node['storage']['root_zpool_name']
 
+# we purge lxd and lxcfs packages because they are unneccessary (we use docker) and lxcfs makes special files in /var
+# that will block
+
+package 'lxd' do
+  action :purge
+end
+
+package 'lxcfs' do
+  action :purge
+end
+
 zpool root_zpool do
-  disks lazy { ZTools.rpool_devs(node['storage']['root_zpool_name'],
-                                 node['aws']['ebs_volume']) }
+  disks lazy { node[:aws][:ebs_volume].map { |k,v| v['device'] if k =~ /#{root_zpool}/ } }
 end
 
 node['storage']['root_filesystems'].keys.each do |fs|
@@ -29,9 +39,10 @@ node['storage']['root_filesystems'].keys.each do |fs|
   end
 
   execute "rsync_#{fs}" do
-    command "rsync --ignore-missing-args -a /#{fs}.off/* /#{fs}/"
+    command "rsync --ignore-missing-args -avxHAXS /#{fs}.off/* /#{fs}/"
     action :nothing
     notifies :run, "ruby_block[set_rsync_completed_attribute_#{fs}]", :immediately
+    returns [0, 23]
   end
 
   ruby_block "set_rsync_completed_attribute_#{fs}" do
@@ -39,13 +50,13 @@ node['storage']['root_filesystems'].keys.each do |fs|
       node.normal['storage']['root_filesystems'][fs]['rsync_completed'] = true
     end
     action :nothing
-    # notifies :delete, "directory[delete_/#{fs}.off]", :immediately
+    notifies :delete, "directory[delete_/#{fs}.off]", :immediately
   end
 
   directory "delete_/#{fs}.off" do
     path "/#{fs}.off"
     recursive true
-    action :delete
+    action :nothing
     only_if { node['storage']['root_filesystems'][fs]['rsync_completed'] }
   end
 
@@ -55,14 +66,4 @@ node['storage']['root_filesystems'].keys.each do |fs|
       only_if "[[ $(zfs get #{key} #{root_zpool}/#{fs} | tr -s ' ' | tail -n1 | cut -d' ' -f3) != #{value} ]]"
     end
   }
-end
-
-class ZTools
-  def self.rpool_devs(pool_name, ebs_volumes)
-    result = []
-    root_pool = pool_name
-    pool_ebs_vols = ebs_volumes.select {|k,v| k.to_s =~ /#{root_pool}/ }
-    pool_devs = pool_ebs_vols.collect {|k,v| v['device']}
-    result + pool_devs
-  end
 end
