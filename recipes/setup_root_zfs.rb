@@ -66,4 +66,5 @@ node['storage']['root_filesystems'].keys.each do |fs|
       only_if "[[ $(zfs get #{key} #{root_zpool}/#{fs} | tr -s ' ' | tail -n1 | cut -d' ' -f3) != #{value} ]]"
     end
   }
+
 end
