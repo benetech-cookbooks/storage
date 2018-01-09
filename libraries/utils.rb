@@ -2,6 +2,16 @@ require 'ostruct'
 
 module StorageCookbook
   module Utils
+
+    def self.get_nvme_dev(dev)
+      # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/nvme-ebs-volumes.html
+      (0..26).each do |n|
+        nvme_dev = "/dev/nvme#{n}n1"
+        next unless system("nvme id-ctrl -v #{nvme_dev} | grep -q #{dev}")
+        return nvme_dev
+      end
+    end
+
     def self.next_avail_dev
       # /dev/sd[f-p] is amazons recommended
       # http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-attaching-volume.html#device_naming

@@ -28,6 +28,10 @@ node['storage']['root_volume_count'].times { |count|
   used_devs.push dev
 }
 
+package 'nvme-cli' do
+  only_if { node[:ec2][:instance_type] =~ /c5.*|m5.*/ }
+end
+
 #
 # EBS device Chef metadata population and general preparation for use by ZFS
 #
@@ -61,19 +65,25 @@ ruby_block "add_ebs_volume_metadata_to_chef_and_prepare_devices_for_use" do
       # now we have the device ie /dev/xvdp
       cur_dev = resp.volumes[0].attachments[0].device
 
+      if node[:ec2][:instance_type] =~ /c5.*|m5.*/
+        check_dev = StorageCookbook::Utils.get_nvme_dev(cur_dev)
+      else
+        check_dev = cur_dev
+      end
+
       # wait around for the device ie /dev/xvdp to become available
       timeout = 0
-      until File.blockdev?(cur_dev) || timeout == 1000 do
-        Chef::Log.debug("device #{dev} not ready - sleeping 10s")
+      until File.blockdev?(check_dev) || timeout == 1000 do
+        Chef::Log.debug("device #{check_dev} not ready - sleeping 10s")
         timeout += 10
         sleep 10
       end
 
       # create a chef attribute containing the EBS vol device ie /dev/xvdp
-      node.normal[:aws][:ebs_volume][k]['device'] = cur_dev
+      node.normal[:aws][:ebs_volume][k]['device'] = check_dev
 
       # add gpt label so ZFS will be willing to touch the device without -f
-      `parted --script #{cur_dev} mklabel gpt`
+      `parted --script #{check_dev} mklabel gpt`
     }
 
 
