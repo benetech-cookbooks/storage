@@ -23,6 +23,7 @@ node['storage']['root_volume_count'].times { |count|
     action [ :create, :attach ]
     retries 5
     retry_delay 5
+    delete_on_termination true
   end
 
   used_devs.push dev
