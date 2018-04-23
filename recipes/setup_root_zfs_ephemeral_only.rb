@@ -10,5 +10,7 @@ zpool root_zpool do
 end
 
 zfs root_zpool + '/docker' do
-  mountpoint '/var/lib/docker'
+  properties [
+                 { mountpoint: '/var/lib/docker' }
+             ]
 end
