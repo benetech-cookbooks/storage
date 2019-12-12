@@ -37,7 +37,9 @@ end
 # EBS device Chef metadata population and general preparation for use by ZFS
 #
 
-chef_gem 'aws-sdk'
+chef_gem 'aws-sdk' do
+  version node['aws-sdk-version']
+end
 
 ruby_block "add_ebs_volume_metadata_to_chef_and_prepare_devices_for_use" do
   block do
