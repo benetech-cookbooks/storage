@@ -30,7 +30,7 @@ node['storage']['root_volume_count'].times { |count|
 }
 
 package 'nvme-cli' do
-  only_if { node[:ec2][:instance_type] =~ /c5.*|m5.*/ }
+  only_if { node[:ec2][:instance_type] =~ /c5.*|m5.*|r5.*/ }
 end
 
 #
@@ -66,7 +66,7 @@ ruby_block "add_ebs_volume_metadata_to_chef_and_prepare_devices_for_use" do
       # now we have the device ie /dev/xvdp
       cur_dev = resp.volumes[0].attachments[0].device
 
-      if node[:ec2][:instance_type] =~ /c5.*|m5.*/
+      if node[:ec2][:instance_type] =~ /c5.*|m5.*|r5.*/
         check_dev = StorageCookbook::Utils.get_nvme_dev(cur_dev)
       else
         check_dev = cur_dev
